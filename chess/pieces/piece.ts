@@ -11,13 +11,15 @@ export abstract class Piece extends Cell {
     }
 
     toString(): string {
-        let char = classNameToChar(this.constructor.name);
+        let char = classNameToChar(this.getPieceName());
         if (this.side === 'white') {
             char = char.toUpperCase();
         }
 
         return char;
     }
+
+    abstract getPieceName(): string;
 
     abstract getPossibleMovements(): Position[];
 }

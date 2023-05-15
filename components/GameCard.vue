@@ -14,7 +14,7 @@
                     <td v-for="cell in rows" @click="click(cell.position)"
                         :style="{ height: `${100 / rows.length}%`, width: `${100 / rows.length}%` }"
                         :class="{ possibleMovement: isAPossibleMovement(cell.position) }">
-                        <PieceImg v-if="cell.is(Piece)" :type="cell.constructor.name.toLowerCase()"
+                        <PieceImg v-if="cell.is(Piece)" :type="(cell as Piece).getPieceName()"
                             :side="(cell as Piece).side" />
                     </td>
                 </tr>

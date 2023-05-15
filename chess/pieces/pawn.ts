@@ -4,6 +4,10 @@ import { Piece } from "./piece";
 
 export class Pawn extends Piece {
 
+    getPieceName(): string {
+        return 'pawn';
+    }
+
     getPossibleMovements(): Position[] {
         const movements: Position[] = [];
         const blackModifier = this.side === 'black' ? -1 : 1;
