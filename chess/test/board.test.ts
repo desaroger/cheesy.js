@@ -10,32 +10,33 @@ describe('Board', () => {
             'p p| p |PPP',
         ])('%j', (boardText) => {
             const board = new Board(boardText);
-            expect(board.toString()).toStrictEqual(boardText);
+            expect(board.toChars()).toStrictEqual(boardText);
         })
     })
 
     describe('get', () => {
         const matrixString = 'P  |p  |ppp';
-        it.each<[Position, string | undefined]>([
-            [[0, 0], 'p'],
-            [[1, 0], 'p'],
-            [[2, 0], 'p'],
-            [[0, 1], 'p'],
-            [[1, 1], ' '],
-            [[2, 1], ' '],
-            [[0, 2], 'P'],
-            [[1, 2], ' '],
-            [[2, 2], ' '],
-            [[2, 3], undefined],
-            [[3, 2], undefined],
-            [[3, 3], undefined],
-            [[0, -1], undefined],
-            [[-1, 0], undefined],
-            [[-1, -1], undefined],
-        ])('%j', (position, expectedChar) => {
+        it.each<[Position, boolean, string | null]>([
+            [[0, 0], true, 'p'],
+            [[1, 0], true, 'p'],
+            [[2, 0], true, 'p'],
+            [[0, 1], true, 'p'],
+            [[1, 1], true, null],
+            [[2, 1], true, null],
+            [[1, 2], true, null],
+            [[0, 2], true, 'P'],
+            [[2, 2], true, null],
+            [[2, 3], false, null],
+            [[3, 2], false, null],
+            [[3, 3], false, null],
+            [[0, -1], false, null],
+            [[-1, 0], false, null],
+            [[-1, -1], false, null],
+        ])('%j', (position, expectedSquareExists, expectedChar) => {
             const board = new Board(matrixString);
-            const piece = board.get(position);
-            const pieceChar = piece?.toString();
+            const square = board.get(position);
+            expect(!!square).toEqual(expectedSquareExists);
+            const pieceChar = square?.piece?.pieceChar ?? null;
             expect(pieceChar).toStrictEqual(expectedChar);
         })
     })

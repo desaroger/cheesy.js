@@ -2,13 +2,13 @@
     <div class="main">
         <div class="row" style="border-color: #ffcfa0;">
             <div v-for="piece of game?.killed.white" class="inner">
-                <PieceImg :type="piece.getPieceName()" :side="piece.side" />
+                <PieceImg :pieceName="piece.pieceName" :side="piece.side" />
             </div>
         </div>
 
         <div class="row" style="border-color: #d28c45;">
             <div v-for="p2 of game?.killed.black" class="inner">
-                <PieceImg :type="p2.getPieceName()" :side="p2.side" />
+                <PieceImg :pieceName="p2.pieceName" :side="p2.side" />
             </div>
         </div>
     </div>

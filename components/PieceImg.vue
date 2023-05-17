@@ -1,5 +1,5 @@
 <template>
-    <div class="piece" :class="[type, side]">
+    <div class="piece" :class="[pieceName, side]">
 
     </div>
 </template>
@@ -7,7 +7,7 @@
 <script setup lang="ts">
 
 defineProps({
-    type: {
+    pieceName: {
         type: String
     },
     side: {
@@ -25,27 +25,27 @@ defineProps({
     background-repeat: no-repeat;
     background-size: 600% auto;
 
-    &.king {
+    &.King {
         background-position-x: 0px;
     }
 
-    &.queen {
+    &.Queen {
         background-position-x: 20%;
     }
 
-    &.bishop {
+    &.Bishop {
         background-position-x: 40%;
     }
 
-    &.knight {
+    &.Knight {
         background-position-x: 60%;
     }
 
-    &.rook {
+    &.Rook {
         background-position-x: 80%;
     }
 
-    &.pawn {
+    &.Pawn {
         background-position-x: 100%;
     }
 

@@ -1,5 +1,6 @@
 import { Board } from "./board";
-import { Piece } from "./pieces/piece";
+import { EmptySquareCanNotBeMoved, ItIsNotYourTurn, MovementNotAllowed } from "./errors";
+import type { Piece } from "./pieces/piece";
 import type { Position, Side } from "./types";
 import { includes } from "./utils";
 
@@ -15,23 +16,24 @@ export class Game {
             throw new Error('Game finished')
         }
 
-        const piece = this.board.get(position);
-        if (!piece || !(piece instanceof Piece)) {
-            throw new Error('Can not move empty cells')
+        const square = this.board.get(position);
+        if (!square?.piece) {
+            throw new EmptySquareCanNotBeMoved();
         }
+        const piece = square.piece;
 
         if (piece.side !== this.turn) {
-            throw new Error('It is not your turn')
+            throw new ItIsNotYourTurn();
         }
 
         const possibleMovements = piece.getPossibleMovements();
         if (!includes(possibleMovements, target)) {
-            throw new Error('Not a possible movement');
+            throw new MovementNotAllowed();
         }
         // TODO check for checkmates
 
         const killed = this.board.move(position, target);
-        if (killed && killed instanceof Piece) {
+        if (killed) {
             this.killed[killed.side].push(killed);
         }
 

@@ -1,12 +1,12 @@
 import { defaultMatrixString } from "./constants";
-import type { Cell } from "./pieces/cell";
-import { Empty } from "./pieces/empty";
+import { CanNotMoveOutsideTheBoard, EmptySquareCanNotBeMoved } from "./errors";
 import type { Pawn } from "./pieces/pawn";
-import { Piece } from "./pieces/piece";
+import type { Piece } from "./pieces/piece";
 import type { Position, Side } from "./types";
-import { charToCellClass } from "./utils/charToCellClass";
+import { charToPieceClass } from "./utils/charToPieceClass";
 
-export type Matrix = Array<Array<Cell>>;
+export type Matrix = Array<Array<Piece | null>>;
+export type Square = {piece: Piece | null, position: Position};
 
 export class Board {
     matrix: Matrix;
@@ -14,19 +14,27 @@ export class Board {
 
     constructor(matrixString = defaultMatrixString) {
         this.matrix = parseMatrixString(matrixString, this);
-        const cornerPiece = this.get([0, 0]);
-        if (!cornerPiece || !(cornerPiece instanceof Piece)) {
+        const cornerSquare = this.get([0, 0]);
+        if (!cornerSquare?.piece) {
             throw new Error('wtf');
         }
 
-        this.starts = cornerPiece.side;
+        this.starts = cornerSquare.piece.side;
     }
 
     get pieces(): Piece[] {
-        return this.matrix.flatMap(row => row).filter(cell => cell.is(Piece)) as Piece[];
+        return this.matrix.flatMap(row => row).filter((piece): piece is Piece => !!piece);
     }
 
-    toString(): string {
+    get squares(): Square[][] {
+        return this.matrix.map((row, rowIndex) => {
+            return row.map((piece, colIndex) => {
+                return {piece, position: [colIndex,this.maximums()[1]-rowIndex]}
+            })
+        })
+    }
+
+    toChars(): string {
         return this.toCharsMatrix().map(row => {
             return row.join('');
         }).join('|');
@@ -34,29 +42,40 @@ export class Board {
 
     toCharsMatrix(): string[][] {
         return this.matrix.map(row => {
-            return row.map(cell => {
-                return cell.toString()
+            return row.map(piece => {
+                return piece?.pieceChar ?? ' ';
             })
         })
     }
 
-    get(position: Position): Cell | undefined {
-        return this.matrixGet(position);
-    }
-
-    move(position: Position, target: Position): Cell | undefined {
-        const sourcePiece = this.get(position);
-        if (!(sourcePiece instanceof Piece)) {
-            throw new Error('can not move empty cell')
+    get(position: Position): Square | null {
+        const piece = this.matrixGet(position);
+        if (piece === undefined) {
+            return null;
         }
-        sourcePiece.pristine = false
-        sourcePiece.position = target;
-        this.matrixSet(position, new Empty(this, position));
 
-        return this.matrixSet(target, sourcePiece);
+        return {piece, position}
     }
 
-    getRelative(root: Position, position: Position): Cell | undefined {
+    move(position: Position, target: Position): Piece | null {
+        const sourceSquare = this.get(position);
+        if (!sourceSquare?.piece) {
+            throw new EmptySquareCanNotBeMoved();
+        }
+        if (this.matrixGet(target) === undefined) {
+            throw new CanNotMoveOutsideTheBoard();
+        }
+        const piece = sourceSquare.piece;
+        piece.pristine = false
+        piece.position = target;
+
+        this.matrixSet(position, null);
+
+        // We already checked that the target exists.
+        return this.matrixSet(target, piece) as Piece | null;
+    }
+
+    getRelative(root: Position, position: Position): Square | null {
         position = [position[0] + root[0], position[1] + root[1]];
 
         return this.get(position);
@@ -76,18 +95,21 @@ export class Board {
         return [size[0] - 1, size[1] - 1];
     }
 
-    protected matrixGet(position: Position) {
+    protected matrixGet(position: Position): Piece | null | undefined {
         const matrixIndexes = this.positionToMatrixIndexes(position);
         return this.matrix[matrixIndexes[0]]?.[matrixIndexes[1]];
     }
 
-    protected matrixSet(position: Position, cell: Cell): Cell | undefined {
+    protected matrixSet(position: Position, piece: Piece | null): Piece | null | undefined {
         const matrixIndexes = this.positionToMatrixIndexes(position);
-        const existingCell = this.matrix[matrixIndexes[0]]?.[matrixIndexes[1]];
+        const existingPiece = this.matrix[matrixIndexes[0]]?.[matrixIndexes[1]];
+        if (existingPiece === undefined) {
+            return undefined;
+        }
 
-        this.matrix[matrixIndexes[0]]![matrixIndexes[1]] = cell;
+        this.matrix[matrixIndexes[0]]![matrixIndexes[1]] = piece;
 
-        return existingCell;
+        return existingPiece;
     }
 
     protected positionToMatrixIndexes(position: Position): Position {
@@ -104,12 +126,12 @@ function parseMatrixString(matrixString: string, board: Board): Matrix {
             const y = rows.length - rowIndex - 1;
             const side: Side = char.toUpperCase() === char ? 'white' : 'black';
 
-            const CellClass = charToCellClass(char);
-            if (CellClass === Empty) {
-                return new (CellClass as typeof Empty)(board, [x, y]);
+            const PieceClass = charToPieceClass(char);
+            if (!PieceClass) {
+                return null;
             } else {
                 // Using Pawn as a type to let me create the instance
-                return new (CellClass as typeof Pawn)(board, [x, y], side);
+                return new (PieceClass as typeof Pawn)(board, [x, y], side);
             }
         })
     });

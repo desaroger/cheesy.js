@@ -10,12 +10,12 @@
 
         <table class="center" :class="[`${props.game?.board.starts}-starts`]">
             <tbody>
-                <tr v-for="rows in props.game?.board.matrix">
-                    <td v-for="cell in rows" @click="click(cell.position)"
+                <tr v-for="rows in props.game?.board.squares">
+                    <td v-for="square in rows" @click="click(square.position)"
                         :style="{ height: `${100 / rows.length}%`, width: `${100 / rows.length}%` }"
-                        :class="{ possibleMovement: isAPossibleMovement(cell.position) }">
-                        <PieceImg v-if="cell.is(Piece)" :type="(cell as Piece).getPieceName()"
-                            :side="(cell as Piece).side" />
+                        :class="{ possibleMovement: isAPossibleMovement(square.position) }">
+                        <PieceImg v-if="square.piece" :pieceName="(square.piece as Piece).pieceName"
+                            :side="(square.piece as Piece).side" />
                     </td>
                 </tr>
             </tbody>
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { Game } from '~/chess/game';
-import { Piece } from '~/chess/pieces/piece';
+import type { Piece } from '~/chess/pieces/piece';
 import type { Position } from '~/chess/types';
 import { includes } from '~/chess/utils';
 
@@ -44,12 +44,12 @@ const possibleMovements = computed(() => {
         return [];
     }
 
-    const piece = props.game?.board.get(data.selected);
-    if (!(piece instanceof Piece)) {
+    const square = props.game?.board.get(data.selected);
+    if (!square?.piece) {
         return [];
     }
 
-    return piece.getPossibleMovements();
+    return square.piece.getPossibleMovements();
 })
 
 function click(position: Position) {
@@ -58,10 +58,11 @@ function click(position: Position) {
         return;
     }
 
-    const piece = props.game?.board.get(position);
-    if (!(piece instanceof Piece)) {
+    const square = props.game?.board.get(position);
+    if (!square?.piece) {
         return;
     }
+    const piece = square.piece;
 
     if (piece.side !== props.game?.turn) {
         return;
