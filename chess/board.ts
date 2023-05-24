@@ -1,5 +1,5 @@
-import { defaultMatrixString } from "./constants";
 import { CanNotMoveOutsideTheBoard, EmptySquareCanNotBeMoved } from "./errors";
+import type { Game } from "./game";
 import type { Pawn } from "./pieces/pawn";
 import type { Piece } from "./pieces/piece";
 import type { Position, Side } from "./types";
@@ -12,8 +12,8 @@ export class Board {
     matrix: Matrix;
     starts: Side;
 
-    constructor(matrixString = defaultMatrixString) {
-        this.matrix = parseMatrixString(matrixString, this);
+    constructor(matrixString: string, game: Game) {
+        this.matrix = parseMatrixString(matrixString, game);
         const cornerSquare = this.get([0, 0]);
         if (!cornerSquare?.piece) {
             throw new Error('wtf');
@@ -75,6 +75,12 @@ export class Board {
         return this.matrixSet(target, piece) as Piece | null;
     }
 
+    removePiece(piece: Piece) {
+        this.matrix = this.matrix.map(row => {
+            return row.map(p => p === piece ? null : p);
+        })
+    }
+
     getRelative(root: Position, position: Position): Square | null {
         position = [position[0] + root[0], position[1] + root[1]];
 
@@ -117,7 +123,7 @@ export class Board {
     }
 }
 
-function parseMatrixString(matrixString: string, board: Board): Matrix {
+function parseMatrixString(matrixString: string, game: Game): Matrix {
     const rows = matrixString.split('|');
 
     return rows.map((row, rowIndex) => {
@@ -131,7 +137,7 @@ function parseMatrixString(matrixString: string, board: Board): Matrix {
                 return null;
             } else {
                 // Using Pawn as a type to let me create the instance
-                return new (PieceClass as typeof Pawn)(board, [x, y], side);
+                return new (PieceClass as typeof Pawn)(game, [x, y], side);
             }
         })
     });

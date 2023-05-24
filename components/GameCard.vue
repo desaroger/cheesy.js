@@ -27,7 +27,7 @@
 import { Game } from '~/chess/game';
 import type { Piece } from '~/chess/pieces/piece';
 import type { Position } from '~/chess/types';
-import { includes } from '~/chess/utils';
+import { equals, includes } from '~/chess/utils';
 
 const props = defineProps({
     game: {
@@ -71,8 +71,8 @@ function click(position: Position) {
     data.selected = position;
 }
 
-function isAPossibleMovement(position: Position) {
-    return includes(possibleMovements.value, position);
+function isAPossibleMovement(destination: Position) {
+    return possibleMovements.value.some(m => equals(m.destination, destination));
 }
 
 function restart() {

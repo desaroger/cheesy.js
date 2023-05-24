@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Piece } from '../pieces/piece'
-import type { Position, Side } from '../types'
-import type { Board } from '../board'
+import type { Movement, Position, Side } from '../types'
+import type { Game } from '../game'
 
 class Pawn extends Piece {
     get pieceName(): string {
@@ -10,7 +10,7 @@ class Pawn extends Piece {
     get pieceAbbr(): string {
         return 'P';
     }
-    getPossibleMovements(): Position[] {
+    getPossibleMovements(): Movement[] {
         throw new Error('Method not implemented.')
     }
 }
@@ -22,7 +22,7 @@ class Knight extends Piece {
     get pieceAbbr(): string {
         throw new Error('Method not implemented.')
     }
-    getPossibleMovements(): Position[] {
+    getPossibleMovements(): Movement[] {
         throw new Error('Method not implemented.')
     }
 }
@@ -58,10 +58,10 @@ describe('Piece', () => {
   })
 })
 
-function create(pieceType: new (board: Board, position: Position, side: Side) => Piece, data: {board?: Board, position?: Position, side?: Side} = {}): Piece {
-  const board = (data.board ?? null) as Board;
+function create(pieceType: new (game: Game, position: Position, side: Side) => Piece, data: {game?: Game, position?: Position, side?: Side} = {}): Piece {
+  const game = (data.game ?? null) as Game;
   const position = (data.position ?? null) as Position;
   const side = (data.side ?? null) as Side;
 
-  return new pieceType(board, position, side);
+  return new pieceType(game, position, side);
 }

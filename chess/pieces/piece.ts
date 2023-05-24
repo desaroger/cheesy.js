@@ -1,10 +1,18 @@
-import type { Board } from "../board";
-import type { Side, Position } from "../types";
+import type { Game } from "../game";
+import type { Side, Position, Movement } from "../types";
 
 export abstract class Piece {
+    // id: string;
     pristine: boolean = true;
 
-    constructor(protected board: Board, public position: Position, public readonly side: Side) {}
+    constructor(protected game: Game, public position: Position, public readonly side: Side) {
+        // this.id = randomBytes(4).toString('hex');
+    }
+
+    // TODO check if this makes sense
+    // valueOf() {
+    //     return this.id;
+    // }
 
     /**
      * Checks if this piece is of a given type
@@ -27,6 +35,10 @@ export abstract class Piece {
         return char;
     }
 
+    get board() {
+        return this.game.board;
+    }
+
     /**
      * Full, human readable name for this piece.
      */
@@ -40,5 +52,5 @@ export abstract class Piece {
     /**
      * Get the list of possible movements of this piece.
      */
-    abstract getPossibleMovements(): Position[];
+    abstract getPossibleMovements(): Movement[];
 }
