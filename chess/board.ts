@@ -14,6 +14,9 @@ export class Board {
 
     constructor(matrixString: string, game: Game) {
         this.matrix = parseMatrixString(matrixString, game);
+        if (!this.matrix.length || this.matrix.length !== this.matrix[0].length) {
+            throw new Error(`Invalid matrix length ${this.matrix[0]?.length}x${this.matrix.length}`)
+        }
         const cornerSquare = this.get([0, 0]);
         if (!cornerSquare?.piece) {
             throw new Error('wtf');
@@ -29,9 +32,13 @@ export class Board {
     get squares(): Square[][] {
         return this.matrix.map((row, rowIndex) => {
             return row.map((piece, colIndex) => {
-                return {piece, position: [colIndex,this.maximums()[1]-rowIndex]}
+                return {piece, position: [colIndex, this.size - 1 - rowIndex]}
             })
         })
+    }
+
+    get size(): number {
+        return this.matrix.length;
     }
 
     toChars(): string {
@@ -87,20 +94,6 @@ export class Board {
         return this.get(position);
     }
 
-    size(): [number, number] {
-        if (!this.matrix.length) {
-            throw new Error('invalid');
-        }
-
-        return [this.matrix[0].length, this.matrix.length];
-    }
-
-    maximums(): [number, number] {
-        const size = this.size();
-
-        return [size[0] - 1, size[1] - 1];
-    }
-
     protected matrixGet(position: Position): Piece | null | undefined {
         const matrixIndexes = this.positionToMatrixIndexes(position);
         return this.matrix[matrixIndexes[0]]?.[matrixIndexes[1]];
@@ -119,7 +112,7 @@ export class Board {
     }
 
     protected positionToMatrixIndexes(position: Position): Position {
-        return [this.maximums()[0] - position[1], position[0]]
+        return [this.size - 1 - position[1], position[0]]
     }
 }
 
