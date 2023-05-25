@@ -25,11 +25,19 @@ export class Board {
         this.starts = cornerSquare.piece.side;
     }
 
-    get pieces(): Piece[] {
-        return this.matrix.flatMap(row => row).filter((piece): piece is Piece => !!piece);
+    get squares(): Square[] {
+        return this.matrix.flatMap((row, rowIndex) => {
+            return row.map((piece, colIndex) => {
+                return {piece, position: [colIndex, this.size - 1 - rowIndex]}
+            })
+        })
     }
 
-    get squares(): Square[][] {
+    get pieces(): Piece[] {
+        return this.squares.map(square => square.piece).filter((piece): piece is Piece => !!piece);
+    }
+
+    get squareMatrix(): Square[][] {
         return this.matrix.map((row, rowIndex) => {
             return row.map((piece, colIndex) => {
                 return {piece, position: [colIndex, this.size - 1 - rowIndex]}
@@ -64,17 +72,19 @@ export class Board {
         return {piece, position}
     }
 
-    move(position: Position, target: Position): Piece | null {
-        const sourceSquare = this.get(position);
-        if (!sourceSquare?.piece) {
-            throw new EmptySquareCanNotBeMoved();
+    getPiecePosition(piece: Piece): Position {
+        const square = this.squares.find(square => square.piece === piece);
+        if (!square) {
+            throw new Error(`Square not found for piece ${piece}`);
         }
-        if (this.matrixGet(target) === undefined) {
-            throw new CanNotMoveOutsideTheBoard();
-        }
-        const piece = sourceSquare.piece;
+
+        return square.position;
+    }
+
+    move(piece: Piece, target: Position): Piece | null {
+        const position = this.getPiecePosition(piece);
         piece.pristine = false
-        piece.position = target;
+        // piece.position = target;
 
         this.matrixSet(position, null);
 
@@ -130,7 +140,7 @@ function parseMatrixString(matrixString: string, game: Game): Matrix {
                 return null;
             } else {
                 // Using Pawn as a type to let me create the instance
-                return new (PieceClass as typeof Pawn)(game, [x, y], side);
+                return new (PieceClass as typeof Pawn)(game, side);
             }
         })
     });

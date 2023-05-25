@@ -10,7 +10,7 @@
 
         <table class="center" :class="[`${props.game?.board.starts}-starts`]">
             <tbody>
-                <tr v-for="rows in props.game?.board.squares">
+                <tr v-for="rows in props.game?.board.squareMatrix">
                     <td v-for="square in rows" @click="click(square.position)"
                         :style="{ height: `${100 / rows.length}%`, width: `${100 / rows.length}%` }"
                         :class="{ possibleMovement: isAPossibleMovement(square.position) }">
@@ -27,7 +27,7 @@
 import { Game } from '~/chess/game';
 import type { Piece } from '~/chess/pieces/piece';
 import type { Position } from '~/chess/types';
-import { equals, includes } from '~/chess/utils';
+import { equals } from '~/chess/utils';
 
 const props = defineProps({
     game: {
@@ -36,25 +36,21 @@ const props = defineProps({
 });
 
 const data = reactive({
-    selected: null as Position | null,
+    selectedPiece: null as Piece | null,
 })
 
 const possibleMovements = computed(() => {
-    if (!data.selected) {
+    if (!data.selectedPiece) {
         return [];
     }
 
-    const square = props.game?.board.get(data.selected);
-    if (!square?.piece) {
-        return [];
-    }
-
-    return square.piece.getPossibleMovements();
+    return props.game!.getPossibleMovements(data.selectedPiece as Piece);
 })
 
 function click(position: Position) {
-    if (data.selected && isAPossibleMovement(position)) {
-        props.game!.move(data.selected, position);
+    if (data.selectedPiece && isAPossibleMovement(position)) {
+        props.game!.move(data.selectedPiece as Piece, position);
+        data.selectedPiece = null;
         return;
     }
 
@@ -63,12 +59,11 @@ function click(position: Position) {
         return;
     }
     const piece = square.piece;
-
     if (piece.side !== props.game?.turn) {
         return;
     }
 
-    data.selected = position;
+    data.selectedPiece = piece;
 }
 
 function isAPossibleMovement(destination: Position) {
@@ -76,7 +71,7 @@ function isAPossibleMovement(destination: Position) {
 }
 
 function restart() {
-    data.selected = null;
+    data.selectedPiece = null;
     props.game?.restart()
 }
 

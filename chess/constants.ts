@@ -1,2 +1,2 @@
 
-export const defaultMatrixString = 'pppp|    |    |PPPP';
+export const defaultMatrixString = 'ppkpp|     |     |     |PPKPP';

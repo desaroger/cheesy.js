@@ -11,23 +11,24 @@ export class Pawn extends Piece {
     }
 
     getPossibleMovements(): Movement[] {
+        const position = this.board.getPiecePosition(this);
         const movements: Movement[] = [];
         const blackModifier = this.side === 'black' ? -1 : 1;
 
-        const frontSquare = this.board.getRelative(this.position, [0, 1 * blackModifier]);
+        const frontSquare = this.board.getRelative(position, [0, 1 * blackModifier]);
         if (frontSquare && !frontSquare.piece) {
             movements.push({
                 piece: this,
-                source: this.position,
+                source: position,
                 destination: frontSquare.position,
             });
 
             if (this.pristine) {
-                const frontFrontSquare = this.board.getRelative(this.position, [0, 2 * blackModifier]);
+                const frontFrontSquare = this.board.getRelative(position, [0, 2 * blackModifier]);
                 if (frontFrontSquare && !frontFrontSquare.piece) {
                     movements.push({
                         piece: this,
-                        source: this.position,
+                        source: position,
                         destination: frontFrontSquare.position,
                     });
                 }
@@ -35,21 +36,21 @@ export class Pawn extends Piece {
         }
 
         for (const pos of [[-1, 1 * blackModifier], [1, 1 * blackModifier]] as Position[]) {
-            const square = this.board.getRelative(this.position, pos);
+            const square = this.board.getRelative(position, pos);
             if (!square) {
                 continue;
             }
             if (square.piece && square.piece.side !== this.side) {
                 movements.push({
                     piece: this,
-                    source: this.position,
+                    source: position,
                     destination: square.position,
                 });
             }
 
             // en passant
             const passantPosition: Position = [pos[0], 0];
-            const passantSquare = this.board.getRelative(this.position, passantPosition);
+            const passantSquare = this.board.getRelative(position, passantPosition);
             if (!passantSquare?.piece || !(passantSquare.piece instanceof Pawn)) {
                 continue;
             }
@@ -61,7 +62,7 @@ export class Pawn extends Piece {
             if (displacementY === 2) {
                 movements.push({
                     piece: this,
-                    source: this.position,
+                    source: position,
                     destination: square.position,
                     killed: passantSquare.piece
                 });

@@ -1,11 +1,11 @@
 import type { Game } from "../game";
-import type { Side, Position, Movement } from "../types";
+import type { Side, Movement } from "../types";
 
 export abstract class Piece {
     // id: string;
     pristine: boolean = true;
 
-    constructor(protected game: Game, public position: Position, public readonly side: Side) {
+    constructor(protected game: Game, public readonly side: Side) {
         // this.id = randomBytes(4).toString('hex');
     }
 
